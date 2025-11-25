@@ -191,7 +191,7 @@ class ImageEnhancer(MedicalImageBase):
         cdf_normalized = cdf * 255 / cdf[-1]
         
         equalized = np.interp(img.flatten(), bins[:-1], cdf_normalized)
-        return equalized.reshape(img.shape).astype(np.uint8)
+        return equalized.reshape(img.shape)
     
     def enhance_image(self, img: np.ndarray, denoise_radius: int = 1,
                      saturation_factor: float = 1.3, gamma: Optional[float] = None,

@@ -1,6 +1,6 @@
 
 import numpy as np
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, Optional, Tuple
 from pathlib import Path
 from .core import MedicalImageBase
 import nibabel as nib

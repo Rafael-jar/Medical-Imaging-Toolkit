@@ -1,14 +1,13 @@
 import numpy as np
 from pathlib import Path
-from typing import Optional, Tuple, Callable, List, Dict, Union, Any
+from typing import Tuple, Dict, Any
 
 # Scikit-image imports
-from skimage import img_as_ubyte, measure
 from skimage.filters import sobel, threshold_otsu
-from skimage.morphology import disk, opening, closing, binary_dilation, binary_erosion, binary_closing
+from skimage.morphology import disk, opening, closing, binary_closing
 from skimage.segmentation import watershed, random_walker
 from skimage.color import rgb2gray, rgba2rgb
-from skimage.feature import graycomatrix, graycoprops, canny, local_binary_pattern
+from skimage.feature import canny, local_binary_pattern
 from skimage.measure import label, regionprops, find_contours, approximate_polygon
 
 # Scipy imports
@@ -394,8 +393,6 @@ class ImageSegmenter(MedicalImageBase):
             results['classifications'].append(shape)
             
         return results
-
-    # --- Volume Processing Wrappers ---
 
     def segment_volume(self, file_path: str, method: str = 'watershed', 
                               is_nifti: bool = True, **kwargs) -> np.ndarray:

@@ -261,7 +261,6 @@ class SimilarityMetrics(MedicalImageBase):
         
         if 'MSE' in metrics:
             mse = metrics['MSE']
-            # Lower MSE is better (less error)
             if mse < 50:
                 quality = "Excellent"
             elif mse < 200:

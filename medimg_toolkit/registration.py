@@ -1,6 +1,6 @@
 
 import numpy as np
-from typing import Dict, Optional
+from typing import Dict
 from .core import MedicalImageBase
 import ants
 import SimpleITK as sitk

@@ -1,4 +1,3 @@
-from .core import MedicalImageBase
 from .enhancement import ImageEnhancer
 from .segmentation import ImageSegmenter
 from .registration import ImageRegistrar
@@ -6,7 +5,7 @@ from .metrics import SimilarityMetrics
 from .io_operations import MedicalImageIO
 
 __version__ = "1.0.0"
-__author__ = "Rafael"
+__author__ = "Rafael Palma Santos"
 __all__ = [
     'MedicalImageProcessor',
     'ImageEnhancer',
