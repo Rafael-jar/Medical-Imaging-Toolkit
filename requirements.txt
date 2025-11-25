@@ -1,0 +1,20 @@
+# Core dependencies (required)
+numpy>=1.21.0
+matplotlib>=3.5.0
+scikit-image>=0.19.0
+scipy>=1.7.0
+pandas>=1.3.0
+
+# Medical imaging libraries
+nibabel>=3.2.0          # For NIfTI format support
+antspyx>=0.3.0          # For advanced registration
+SimpleITK>=2.1.0        # Alternative registration library
+
+# Jupyter support (for running Demo_Medical_Imaging.ipynb)
+jupyter>=1.0.0
+notebook>=6.4.0
+ipykernel>=6.0.0
+
+# Additional utilities
+seaborn>=0.11.0         # For better visualizations
+tqdm>=4.62.0            # For progress bars in batch processing
