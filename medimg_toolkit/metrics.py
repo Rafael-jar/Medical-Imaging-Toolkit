@@ -9,11 +9,6 @@ class SimilarityMetrics(MedicalImageBase):
     Compute various similarity metrics between images.
     Used for evaluating registration and segmentation quality.
     """
-
-    @staticmethod
-    def convert_to_float(img: np.ndarray) -> np.ndarray:
-        """Convert image to flat float array"""
-        return img.ravel().astype(float) if img.dtype == bool else img.ravel()
     
     def compute_mse(self, img1: np.ndarray, img2: np.ndarray) -> float:
         """

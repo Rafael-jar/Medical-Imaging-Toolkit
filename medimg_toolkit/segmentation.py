@@ -26,28 +26,6 @@ class ImageSegmenter(MedicalImageBase):
 
     # --- Helper Methods to Reduce "Mess" ---
 
-    def _ensure_uint8(self, img: np.ndarray) -> np.ndarray:
-        """Helper: Normalizes and converts image to 0-255 uint8 range."""
-        if img.dtype == np.uint8:
-            return img
-        
-        # Handle 0-1 float range or arbitrary float range
-        img_min, img_max = img.min(), img.max()
-        if img_max > img_min:
-            img_normalized = (img - img_min) / (img_max - img_min)
-        else:
-            img_normalized = np.zeros_like(img, dtype=float)
-            
-        return (img_normalized * 255).astype(np.uint8)
-
-    def _ensure_float(self, img: np.ndarray) -> np.ndarray:
-        """Helper: Normalizes image to 0.0-1.0 float range."""
-        if img.dtype == np.uint8:
-            return img.astype(float) / 255.0
-        if img.max() > 1.0:
-            return img / 255.0
-        return img
-
     def _load_io_helper(self):
         """Lazy loader for IO operations to avoid circular imports."""
         try:
@@ -163,10 +141,10 @@ class ImageSegmenter(MedicalImageBase):
     def histogram_thresholding(self, img: np.ndarray, method: str = 'otsu', 
                              morphological_clean: bool = True) -> np.ndarray:
         """Segments image using histogram analysis (Otsu or Iterative Optimal)."""
-        img_uint8 = self._ensure_uint8(img)
+        img_uint8 = self.ensure_uint8(img)
         
         # Calculate histogram (ignore black background 0)
-        hist, _ = np.histogram(img_uint8, bins=256, range=(0, 256))
+        hist, _ = self.compute_histogram(img_uint8, bins=256)
         hist[0] = 0 
         
         if method == 'otsu':
@@ -186,7 +164,7 @@ class ImageSegmenter(MedicalImageBase):
     
     def watershed_segmentation(self, img: np.ndarray, morphological_clean: bool = True) -> np.ndarray:
         """Applies Watershed algorithm using Sobel edges and intensity markers."""
-        img_uint8 = self._ensure_uint8(img)
+        img_uint8 = self.ensure_uint8(img)
         elevation_map = sobel(img_uint8)
         
         # Generate markers based on Otsu
@@ -213,7 +191,7 @@ class ImageSegmenter(MedicalImageBase):
     def edge_based_segmentation(self, img: np.ndarray, sigma: float = 2.0, 
                                 fill_holes: bool = True) -> np.ndarray:
         """Canny edge detection with optional hole filling."""
-        img_float = self._ensure_float(img)
+        img_float = self.ensure_float(img)
         edges = canny(img_float, sigma=sigma)
         
         if not fill_holes:
@@ -227,7 +205,7 @@ class ImageSegmenter(MedicalImageBase):
     
     def random_walker_segmentation(self, img: np.ndarray, beta: int = 130) -> np.ndarray:
         """Graph-based Random Walker segmentation optimized for Brain MRI."""
-        img_norm = self._ensure_float(img)
+        img_norm = self.ensure_float(img)
         
         # Initialize markers
         markers = np.zeros_like(img_norm, dtype=np.int32)
@@ -257,7 +235,7 @@ class ImageSegmenter(MedicalImageBase):
     def texture_based_segmentation(self, img: np.ndarray, P: int = 8, R: float = 1.0,
                                   clean_result: bool = True) -> np.ndarray:
         """Segments based on Local Binary Patterns (LBP)."""
-        img_uint8 = self._ensure_uint8(img)
+        img_uint8 = self.ensure_uint8(img)
         
         # Compute LBP
         lbp = local_binary_pattern(img_uint8, P=P, R=R, method='uniform')
@@ -266,8 +244,12 @@ class ImageSegmenter(MedicalImageBase):
         binary_result = lbp > threshold_otsu(lbp)
         
         if clean_result:
+            # Ignore black background
+            hist, _ = np.histogram(img_uint8, bins=256, range=(0, 256))
+            hist[0] = 0
+
             # Refine using intensity mask
-            intensity_mask = img_uint8 > self.otsu_threshold(np.histogram(img_uint8, bins=256)[0])
+            intensity_mask = img_uint8 > self.otsu_threshold(hist)
             combined = binary_result & intensity_mask
             combined = binary_fill_holes(binary_closing(combined, disk(3)))
             return combined
@@ -298,8 +280,8 @@ class ImageSegmenter(MedicalImageBase):
         # Pre-masking (Background Removal)
         bg_mask = np.ones_like(img, dtype=bool)
         if remove_background:
-            img_uint8 = self._ensure_uint8(img)
-            hist = np.histogram(img_uint8, bins=256)[0]
+            img_uint8 = self.ensure_uint8(img)
+            hist = self.compute_histogram(img_uint8, bins=256)[0]
             thresh = self.otsu_threshold(hist)
             
             raw_mask = (img_uint8 >= thresh) if background_is_dark else (img_uint8 <= thresh)
